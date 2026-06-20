@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAG Document Chatbot</title>
+    <title>DocMind AI — RAG Document Chatbot</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after {
             margin: 0;
@@ -15,417 +15,150 @@
         }
 
         :root {
-            --bg-primary: #0a0e14;
-            --bg-secondary: #111820;
-            --bg-tertiary: #16202c;
-            --bg-elevated: #1a2634;
-            --border: #263040;
-            --border-light: #334155;
+            --bg-deep: #070b14;
+            --bg-primary: #0c1322;
+            --bg-secondary: #111b2e;
+            --bg-tertiary: #172236;
+            --bg-elevated: #1c2a42;
+            --border: #243050;
+            --border-light: #2d3d5c;
             --text-primary: #e8edf5;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --accent: #3b82f6;
-            --accent-hover: #60a5fa;
-            --accent-glow: rgba(59, 130, 246, 0.15);
-            --success: #22c55e;
-            --success-bg: rgba(34, 197, 94, 0.12);
-            --error: #ef4444;
-            --sidebar-width: 320px;
-            --header-height: 60px;
-            --radius: 10px;
-            --radius-sm: 6px;
+            --text-secondary: #94a9c9;
+            --text-muted: #5a7298;
+            --gradient: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            --gradient-hover: linear-gradient(135deg, #a78bfa, #60a5fa);
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.2);
+            --success: #22d65e;
+            --success-bg: rgba(34, 214, 94, 0.1);
+            --warning: #f59e0b;
+            --sidebar-w: 330px;
+            --header-h: 64px;
+            --radius: 12px;
+            --radius-sm: 8px;
             --radius-full: 9999px;
         }
 
         html, body {
             height: 100%;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-primary);
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-deep);
             color: var(--text-primary);
             font-size: 15px;
-            line-height: 1.5;
+            line-height: 1.6;
             -webkit-font-smoothing: antialiased;
         }
 
-        .app-layout {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            position: relative;
-            z-index: 10;
-        }
-
-        .sidebar-header {
-            padding: 1rem 1.25rem;
+        /* HEADER */
+        .app-header {
+            height: var(--header-h);
+            background: rgba(12, 19, 34, 0.85);
+            backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            min-height: var(--header-height);
-        }
-
-        .sidebar-header .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, var(--accent), #8b5cf6);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            flex-shrink: 0;
-        }
-
-        .sidebar-header h1 {
-            font-size: 1.05rem;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-            color: var(--text-primary);
-        }
-
-        .sidebar-header h1 span {
-            color: var(--accent);
-        }
-
-        .sidebar-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1.25rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            scrollbar-width: thin;
-            scrollbar-color: var(--border) transparent;
-        }
-
-        .sidebar-body::-webkit-scrollbar { width: 4px; }
-        .sidebar-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-        .section-label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-        }
-
-        /* UPLOAD ZONE */
-        .upload-zone {
-            border: 2px dashed var(--border);
-            border-radius: var(--radius);
-            padding: 2rem 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            background: var(--bg-tertiary);
-            position: relative;
-        }
-
-        .upload-zone:hover {
-            border-color: var(--accent);
-            background: rgba(59, 130, 246, 0.04);
-        }
-
-        .upload-zone.dragover {
-            border-color: var(--accent);
-            background: var(--accent-glow);
-            transform: scale(1.01);
-        }
-
-        .upload-zone.uploaded {
-            border-color: var(--success);
-            background: var(--success-bg);
-            cursor: default;
-        }
-
-        .upload-zone .upload-icon {
-            width: 48px;
-            height: 48px;
-            margin: 0 auto 0.75rem;
-            background: var(--bg-elevated);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .upload-zone .upload-icon svg {
-            width: 22px;
-            height: 22px;
-            color: var(--text-secondary);
-            transition: all 0.3s ease;
-        }
-
-        .upload-zone:hover .upload-icon {
-            background: var(--accent-glow);
-        }
-
-        .upload-zone:hover .upload-icon svg {
-            color: var(--accent);
-        }
-
-        .upload-zone .upload-title {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .upload-zone .upload-subtitle {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .upload-zone .upload-subtitle span {
-            color: var(--accent);
-            text-decoration: underline;
-            text-underline-offset: 2px;
-        }
-
-        /* Progress Bar */
-        .progress-container {
-            margin-top: 0.75rem;
-            display: none;
-        }
-
-        .progress-container.active {
-            display: block;
-        }
-
-        .progress-bar-track {
-            width: 100%;
-            height: 4px;
-            background: var(--border);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--accent), #8b5cf6);
-            border-radius: 2px;
-            transition: width 0.3s ease;
-        }
-
-        .progress-text {
-            display: flex;
             justify-content: space-between;
-            margin-top: 0.35rem;
-            font-size: 0.65rem;
-            color: var(--text-muted);
-        }
-
-        /* File Info */
-        .file-info {
-            display: none;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem;
-            background: var(--bg-elevated);
-            border-radius: var(--radius-sm);
-            margin-top: 0.75rem;
-            border: 1px solid var(--border);
-        }
-
-        .file-info.active {
-            display: flex;
-        }
-
-        .file-info .file-icon {
-            width: 36px;
-            height: 36px;
-            background: var(--error);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .file-info .file-details {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .file-info .file-details .name {
-            font-size: 0.8125rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .file-info .file-details .size {
-            font-size: 0.6875rem;
-            color: var(--text-muted);
-        }
-
-        .file-info .file-status {
-            flex-shrink: 0;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            font-size: 0.6875rem;
-            font-weight: 500;
-            padding: 0.2rem 0.6rem;
-            border-radius: var(--radius-full);
-            background: var(--bg-tertiary);
-            color: var(--text-muted);
-            border: 1px solid var(--border);
-        }
-
-        .status-badge.uploading {
-            background: rgba(59, 130, 246, 0.12);
-            color: var(--accent);
-            border-color: rgba(59, 130, 246, 0.3);
-        }
-
-        .status-badge.ready {
-            background: var(--success-bg);
-            color: var(--success);
-            border-color: rgba(34, 197, 94, 0.3);
-        }
-
-        .status-badge.error {
-            background: rgba(239, 68, 68, 0.12);
-            color: var(--error);
-            border-color: rgba(239, 68, 68, 0.3);
-        }
-
-        .checkmark {
-            width: 16px;
-            height: 16px;
-            color: var(--success);
-        }
-
-        /* Doc Info */
-        .doc-info {
-            display: none;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .doc-info.active {
-            display: flex;
-        }
-
-        .doc-info-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-        }
-
-        .doc-info-row .label {
-            color: var(--text-muted);
-        }
-
-        .doc-info-row .value {
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        /* Sidebar Tips */
-        .sidebar-tips {
-            margin-top: auto;
-            padding: 0.75rem;
-            background: var(--bg-tertiary);
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border);
-        }
-
-        .sidebar-tips .tip-title {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 0.35rem;
-        }
-
-        .sidebar-tips .tip-text {
-            font-size: 0.6875rem;
-            color: var(--text-muted);
-            line-height: 1.5;
-        }
-
-        /* MAIN AREA */
-        .main-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            background: var(--bg-primary);
-        }
-
-        .main-header {
-            min-height: var(--header-height);
             padding: 0 1.5rem;
-            border-bottom: 1px solid var(--border);
+            position: relative;
+            z-index: 100;
+        }
+
+        .app-header .brand {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            background: var(--bg-secondary);
+            gap: 0.75rem;
         }
 
-        .main-header .greeting {
-            font-size: 0.875rem;
-            font-weight: 500;
+        .app-header .brand .logo {
+            width: 34px;
+            height: 34px;
+            background: var(--gradient);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1rem;
+            color: #fff;
+            letter-spacing: -0.5px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .app-header .brand .app-name {
+            font-size: 1.05rem;
+            font-weight: 700;
             color: var(--text-primary);
+            letter-spacing: -0.02em;
         }
 
-        .main-header .greeting span {
+        .app-header .brand .app-name span {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .app-header .brand .tagline {
+            font-size: 0.75rem;
             color: var(--text-muted);
             font-weight: 400;
+            display: none;
         }
 
-        .main-header .header-status {
+        @media (min-width: 640px) {
+            .app-header .brand .tagline {
+                display: inline;
+                padding-left: 0.75rem;
+                border-left: 1px solid var(--border);
+                margin-left: 0.5rem;
+            }
+        }
+
+        .app-header .header-right {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
+            gap: 1rem;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 0.3rem 0.75rem;
+            border-radius: var(--radius-full);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
             color: var(--text-muted);
         }
 
-        .main-header .header-status .dot {
-            width: 8px;
-            height: 8px;
+        .status-pill .dot {
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: var(--text-muted);
+            transition: all 0.3s;
         }
 
-        .main-header .header-status .dot.online {
+        .status-pill .dot.online {
             background: var(--success);
-            box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+            box-shadow: 0 0 8px rgba(34, 214, 94, 0.5);
+        }
+
+        .status-pill .label {
+            color: var(--text-secondary);
         }
 
         .new-doc-btn {
             display: none;
             align-items: center;
-            gap: 0.35rem;
-            background: transparent;
-            color: #f97316;
-            border: 1px solid rgba(249, 115, 22, 0.35);
+            gap: 0.4rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.25);
             border-radius: var(--radius-sm);
-            padding: 0.4rem 0.75rem;
+            padding: 0.4rem 0.85rem;
             cursor: pointer;
             font-size: 0.75rem;
             font-weight: 500;
@@ -435,8 +168,8 @@
         }
 
         .new-doc-btn:hover {
-            background: rgba(249, 115, 22, 0.12);
-            border-color: #f97316;
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.5);
         }
 
         .new-doc-btn.visible {
@@ -448,29 +181,597 @@
             height: 14px;
         }
 
-        /* CHAT */
-        .chat-wrapper {
-            flex: 1;
-            overflow: hidden;
-            position: relative;
+        .hr-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            padding: 0.3rem 0.75rem;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 500;
+            font-family: inherit;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            white-space: nowrap;
         }
 
-        .chat-container {
-            height: 100%;
-            overflow-y: auto;
-            padding: 1.5rem;
+        .hr-toggle:hover { border-color: var(--border-light); }
+
+        .hr-toggle.active {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: #8b5cf6;
+            color: #a78bfa;
+        }
+
+        .hr-toggle .hr-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            transition: all 0.3s;
+        }
+
+        .hr-toggle.active .hr-dot {
+            background: #8b5cf6;
+            box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+        }
+
+        .hr-toggle svg { width: 14px; height: 14px; }
+
+        .cv-list {
+            display: none;
+            flex-direction: column;
+            gap: 0.3rem;
+            padding: 0.5rem 0;
+        }
+
+        .cv-list.active { display: flex; }
+
+        .cv-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.6rem;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            font-size: 0.7rem;
+        }
+
+        .cv-item .cv-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            background: rgba(239, 68, 68, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.55rem;
+            font-weight: 700;
+            color: #ef4444;
+        }
+
+        .cv-item .cv-name {
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-secondary);
+        }
+
+        .cv-item .cv-check {
+            color: var(--success);
+            flex-shrink: 0;
+        }
+
+        .cv-item .cv-check svg { width: 14px; height: 14px; }
+
+        /* LAYOUT */
+        .app-body {
+            display: flex;
+            height: calc(100vh - var(--header-h));
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .sidebar-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
             scrollbar-width: thin;
             scrollbar-color: var(--border) transparent;
         }
 
-        .chat-container::-webkit-scrollbar { width: 5px; }
-        .chat-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-        /* Empty State */
-        .empty-state {
+        .section-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.6rem;
+        }
+
+        /* UPLOAD ZONE */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 2.25rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+            position: relative;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+            transform: scale(1.015);
+            border-style: solid;
+        }
+
+        .upload-zone.uploaded {
+            border-color: var(--success);
+            background: var(--success-bg);
+            cursor: default;
+            border-style: solid;
+        }
+
+        .upload-zone .upload-icon-box {
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 0.75rem;
+            background: var(--bg-tertiary);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .upload-zone:hover .upload-icon-box {
+            background: var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        .upload-zone .upload-icon-box svg {
+            width: 22px;
+            height: 22px;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .upload-zone:hover .upload-icon-box svg {
+            color: var(--accent);
+        }
+
+        .upload-zone .upload-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.2rem;
+        }
+
+        .upload-zone .upload-sub {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .upload-zone .upload-sub span {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .upload-zone input {
+            display: none;
+        }
+
+        /* Progress */
+        .progress-wrap {
+            display: none;
+            margin-top: 0.75rem;
+        }
+
+        .progress-wrap.active {
+            display: block;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--gradient);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.3rem;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+        }
+
+        /* File Card */
+        .file-card {
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem 0.85rem;
+            background: var(--bg-elevated);
+            border-radius: var(--radius-sm);
+            margin-top: 0.75rem;
+            border: 1px solid var(--border);
+        }
+
+        .file-card.active {
+            display: flex;
+        }
+
+        .file-card .pdf-badge {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .file-card .file-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-card .file-meta .fname {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-card .file-meta .fsize {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        .file-card .file-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.65rem;
+            font-weight: 500;
+            padding: 0.2rem 0.55rem;
+            border-radius: var(--radius-full);
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .file-card .file-status-badge.uploading {
+            background: rgba(99, 102, 241, 0.12);
+            color: var(--accent);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .summary-card {
+            display: none; margin-top: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: var(--bg-secondary);
+        }
+        .summary-card.active { display: block; }
+        .summary-toggle {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.6rem 0.85rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            color: var(--text);
+            font-weight: 600;
+            user-select: none;
+        }
+        .summary-toggle:hover { background: var(--hover); }
+        .summary-chevron { transition: transform .2s; }
+        .summary-card.collapsed .summary-chevron { transform: rotate(-90deg); }
+        .summary-card.collapsed .summary-body { display: none; }
+        .summary-body {
+            padding: 0 0.85rem 0.85rem;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .summary-text { margin-bottom: 0.6rem; }
+        .summary-topics {
+            display: flex; flex-wrap: wrap; gap: 0.35rem;
+        }
+        .summary-topics .topic-tag {
+            display: inline-block;
+            padding: 0.1rem 0.55rem;
+            border-radius: var(--radius-full);
+            font-size: 0.62rem;
+            font-weight: 500;
+            background: rgba(99, 102, 241, 0.12);
+            color: var(--accent);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+        }
+
+        .file-card .file-status-badge.ready {
+            background: var(--success-bg);
+            color: var(--success);
+            border-color: rgba(34, 214, 94, 0.3);
+        }
+
+        .file-card .file-status-badge.error {
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .checkmark-svg {
+            width: 14px;
+            height: 14px;
+            color: var(--success);
+        }
+
+        /* Doc Info */
+        .doc-panel {
+            display: none;
+            flex-direction: column;
+            gap: 0.4rem;
+            padding: 0.85rem;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+
+        .doc-panel.active {
+            display: flex;
+        }
+
+        .doc-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+        }
+
+        .doc-row .dl {
+            color: var(--text-muted);
+        }
+
+        .doc-row .dv {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .doc-row .dv.lang-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.1rem 0.45rem;
+            border-radius: var(--radius-full);
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            border: 1px solid var(--border);
+        }
+
+        .doc-row .dv.lang-badge.en {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .doc-row .dv.lang-badge.ur {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+            border-color: rgba(34, 214, 94, 0.3);
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 0.25rem 0;
+        }
+
+        .sessions-section {
+            display: none;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .sessions-section.active { display: flex; }
+
+        .sessions-section .section-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .new-session-btn {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            font-weight: 500;
+            font-family: inherit;
+            padding: 0.2rem 0.55rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .new-session-btn:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .sessions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .session-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.55rem 0.7rem;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .session-item:hover { border-color: var(--border-light); }
+
+        .session-item.active {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .session-item .s-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .session-item .s-icon svg { width: 14px; height: 14px; color: var(--text-muted); }
+
+        .session-item.active .s-icon { background: var(--accent); }
+        .session-item.active .s-icon svg { color: #fff; }
+
+        .session-item .s-body { flex: 1; min-width: 0; }
+
+        .session-item .s-body .s-preview {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+
+        .session-item .s-body .s-time {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+        }
+
+        .session-item .s-del {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.15rem;
+            opacity: 0;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .session-item:hover .s-del { opacity: 1; }
+        .session-item .s-del:hover { color: #ef4444; }
+
+        .session-item .s-del svg { width: 14px; height: 14px; }
+
+        .sidebar-tip {
+            margin-top: auto;
+            padding: 0.85rem;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+
+        .sidebar-tip .tip-head {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-tip .tip-body {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* MAIN */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            background: var(--bg-deep);
+            position: relative;
+        }
+
+        .chat-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .chat-scroll::-webkit-scrollbar { width: 5px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        /* HERO */
+        .hero-section {
+
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -478,91 +779,138 @@
             flex: 1;
             text-align: center;
             padding: 2rem;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
-        .empty-state .empty-icon {
-            width: 72px;
-            height: 72px;
-            background: var(--bg-tertiary);
-            border-radius: 50%;
+        .hero-section .hero-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--bg-secondary);
+            border-radius: 24px;
+
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 0.5rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
         }
 
-        .empty-state .empty-icon svg {
-            width: 32px;
-            height: 32px;
+        .hero-section .hero-icon svg {
+            width: 36px;
+            height: 36px;
+            color: var(--accent);
+        }
+
+        .hero-section h2 {
+            font-size: 1.65rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            max-width: 480px;
+        }
+
+        .hero-section .hero-sub {
+            font-size: 0.9rem;
             color: var(--text-muted);
+            max-width: 420px;
+            line-height: 1.7;
         }
 
-        .empty-state h3 {
-            font-size: 1.1rem;
+        .hero-section .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            padding: 0.65rem 1.5rem;
+            background: var(--gradient);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 0.85rem;
             font-weight: 600;
-            color: var(--text-secondary);
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
         }
 
-        .empty-state p {
-            font-size: 0.8125rem;
-            color: var(--text-muted);
-            max-width: 340px;
-            line-height: 1.6;
+        .hero-section .hero-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
         }
 
-        .empty-state .empty-steps {
+        .hero-section .hero-cta svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .hero-section .hero-features {
             display: flex;
             gap: 2rem;
-            margin-top: 0.5rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
-        .empty-state .empty-steps .step {
+        .hero-section .hero-features .hf-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.4rem;
-            font-size: 0.75rem;
+            gap: 0.25rem;
+            font-size: 0.72rem;
             color: var(--text-muted);
         }
 
-        .empty-state .empty-steps .step .step-num {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--bg-tertiary);
+        .hero-section .hero-features .hf-item .hf-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 600;
+        }
+
+        .hero-section .hero-features .hf-item .hf-icon svg {
+            width: 16px;
+            height: 16px;
             color: var(--text-secondary);
         }
 
-        /* Messages */
-        .message {
+        /* CHAT MESSAGES */
+        .msg-group {
             display: flex;
-            gap: 0.75rem;
-            max-width: 85%;
-            animation: msgIn 0.3s ease;
+            flex-direction: column;
+            gap: 0.15rem;
+            animation: msgSlide 0.35s ease;
         }
 
-        @keyframes msgIn {
-            from { opacity: 0; transform: translateY(10px); }
+        @keyframes msgSlide {
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .message.user {
+        .msg-row {
+            display: flex;
+            gap: 0.75rem;
+            max-width: 85%;
+        }
+
+        .msg-row.user {
             align-self: flex-end;
             flex-direction: row-reverse;
         }
 
-        .message.ai {
+        .msg-row.ai {
             align-self: flex-start;
         }
 
-        .message .avatar {
+        .msg-row .m-avatar {
             width: 34px;
             height: 34px;
             border-radius: 50%;
@@ -570,108 +918,116 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            position: relative;
+            margin-top: 4px;
         }
 
-        .message.user .avatar {
-            background: linear-gradient(135deg, var(--accent), #2563eb);
+        .msg-row.user .m-avatar {
+            background: var(--gradient);
             color: #fff;
-            font-size: 0.8rem;
-            font-weight: 600;
+            font-size: 0.75rem;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
         }
 
-        .message.ai .avatar {
+        .msg-row.ai .m-avatar {
             background: var(--bg-elevated);
             border: 1px solid var(--border);
             color: var(--accent);
         }
 
-        .message.ai .avatar svg {
+        .msg-row.ai .m-avatar svg {
+
             width: 18px;
             height: 18px;
         }
 
-        .message .msg-content {
+        .msg-row .m-body {
             display: flex;
             flex-direction: column;
-            gap: 0.25rem;
+            gap: 0.2rem;
             max-width: 100%;
         }
 
-        .message .bubble {
-            padding: 0.7rem 1rem;
-            border-radius: 14px;
+        .msg-row .m-bubble {
+            padding: 0.7rem 1.1rem;
+            border-radius: 16px;
             font-size: 0.875rem;
-            line-height: 1.6;
+            line-height: 1.65;
             word-wrap: break-word;
             white-space: pre-wrap;
         }
 
-        .message.user .bubble {
-            background: linear-gradient(135deg, var(--accent), #2563eb);
+        .msg-row.user .m-bubble {
+            background: var(--gradient);
             color: #fff;
             border-bottom-right-radius: 4px;
         }
 
-        .message.ai .bubble {
+        .msg-row.ai .m-bubble {
             background: var(--bg-elevated);
-            border: 1px solid var(--border);
+            border: 1px solid var(--border-light);
             color: var(--text-primary);
             border-bottom-left-radius: 4px;
         }
 
-        .message .timestamp {
-            font-size: 0.625rem;
+        .msg-row .m-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0 0.3rem;
+        }
+
+        .msg-row .m-meta .m-time {
+            font-size: 0.6rem;
             color: var(--text-muted);
-            padding: 0 0.25rem;
         }
 
-        .message.user .timestamp {
-            text-align: right;
+        .msg-row .m-meta .m-lang {
+            font-size: 0.55rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 0.05rem 0.35rem;
+            border-radius: var(--radius-full);
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
         }
 
-        .message.ai .timestamp {
-            text-align: left;
+        .msg-row.user .m-meta {
+            justify-content: flex-end;
         }
 
-        .message.user .msg-content {
-            align-items: flex-end;
-        }
-
-        .message.ai .msg-content {
-            align-items: flex-start;
-        }
-
-        /* Typing Indicator */
-        .typing-indicator {
+        /* TYPING */
+        .typing-dots {
             display: flex;
             align-items: center;
             gap: 4px;
-            padding: 0.2rem 0;
+            padding: 0.15rem 0;
         }
 
-        .typing-indicator span {
-            width: 6px;
-            height: 6px;
+        .typing-dots span {
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: var(--text-muted);
-            animation: typingBounce 1.4s infinite ease-in-out both;
+            animation: dotBounce 1.4s infinite ease-in-out both;
         }
 
-        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.16s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.32s; }
+        .typing-dots span:nth-child(1) { animation-delay: 0s; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.16s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.32s; }
 
-        @keyframes typingBounce {
+        @keyframes dotBounce {
             0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
             40% { transform: scale(1); opacity: 1; }
         }
 
         /* INPUT */
-        .input-area {
-            padding: 1rem 1.5rem;
+        .input-bar {
+            padding: 1rem 2rem;
             border-top: 1px solid var(--border);
-            background: var(--bg-secondary);
+            background: var(--bg-primary);
+
         }
 
         .input-row {
@@ -685,10 +1041,11 @@
 
         .input-row input {
             flex: 1;
-            background: var(--bg-tertiary);
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 0.75rem 1rem;
+            padding: 0.8rem 1.1rem;
+
             color: var(--text-primary);
             font-size: 0.875rem;
             font-family: inherit;
@@ -706,7 +1063,7 @@
         }
 
         .input-row input:disabled {
-            opacity: 0.4;
+            opacity: 0.35;
             cursor: not-allowed;
         }
 
@@ -716,16 +1073,16 @@
         }
 
         .send-btn {
-            background: var(--accent);
+            background: var(--gradient);
             color: #fff;
             border: none;
             border-radius: var(--radius);
-            padding: 0.75rem 1.25rem;
+            padding: 0.8rem 1.25rem;
             cursor: pointer;
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: 600;
             font-family: inherit;
-            transition: background 0.2s, transform 0.15s;
+            transition: all 0.2s;
             white-space: nowrap;
             display: flex;
             align-items: center;
@@ -733,8 +1090,8 @@
         }
 
         .send-btn:hover:not(:disabled) {
-            background: var(--accent-hover);
             transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
         }
 
         .send-btn:active:not(:disabled) {
@@ -742,7 +1099,7 @@
         }
 
         .send-btn:disabled {
-            opacity: 0.4;
+            opacity: 0.35;
             cursor: not-allowed;
         }
 
@@ -751,138 +1108,460 @@
             height: 16px;
         }
 
-        #fileInput {
+        /* FOOTER */
+        .app-footer {
+            padding: 0.5rem 2rem;
+            border-top: 1px solid var(--border);
+            background: var(--bg-primary);
             display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            font-size: 0.65rem;
+            color: var(--text-muted);
         }
 
-        /* Mobile Responsive */
+        .app-footer.visible {
+            display: flex;
+        }
+
+        .app-footer .footer-dot {
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        .app-footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .app-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* HAMBURGER */
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0.3rem;
+        }
+
+        .hamburger svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* MOBILE */
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
-                top: 0;
+                top: var(--header-h);
                 left: 0;
                 width: 100%;
-                height: auto;
-                max-height: 50vh;
+                height: calc(100vh - var(--header-h));
+                max-height: 55vh;
                 border-right: none;
                 border-bottom: 1px solid var(--border);
-                z-index: 100;
+                z-index: 200;
                 transform: translateY(-100%);
                 transition: transform 0.3s ease;
-                overflow-y: auto;
             }
 
             .sidebar.open {
                 transform: translateY(0);
             }
 
-            .sidebar-toggle {
-                display: flex !important;
+            .hamburger {
+                display: block;
             }
 
-            .main-area {
-                padding-top: 0;
+            .msg-row {
+                max-width: 98%;
             }
 
-            .main-header .greeting span {
-                display: none;
-            }
-
-            .message {
-                max-width: 95%;
-            }
-
-            .empty-state .empty-steps {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .chat-container {
+            .chat-scroll {
                 padding: 1rem;
             }
+
+            .input-bar {
+                padding: 0.75rem 1rem;
+            }
+
+            .hero-section h2 {
+                font-size: 1.3rem;
+            }
+
+            .hero-section .hero-features {
+                gap: 1.25rem;
+            }
+
+            .app-header .brand .tagline {
+                display: none;
+            }
         }
 
-        .sidebar-toggle {
+        /* QUESTION COUNTER */
+        .q-counter {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            padding: 0.3rem 0.65rem;
+            border-radius: var(--radius-full);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            white-space: nowrap;
             display: none;
+        }
+        .q-counter.visible { display: inline-flex; align-items: center; gap: 0.3rem; }
+        .q-counter .q-num { color: var(--accent); font-weight: 600; }
+
+        /* AUTH BUTTON */
+        .auth-btn {
+            background: var(--gradient);
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 0.35rem 0.85rem;
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(99,102,241,0.35); }
+        .auth-btn.outline {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .auth-btn.outline:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: none;
+        }
+        .user-email-display {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: none;
+            white-space: nowrap;
+        }
+        .user-email-display.visible { display: inline; }
+
+        /* MODALS */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+            animation: modalIn 0.25s ease;
+            position: relative;
+        }
+        @keyframes modalIn { from { opacity:0; transform:scale(0.95) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
+        .modal-close {
+            position: absolute;
+            top: 1rem; right: 1rem;
             background: none;
             border: none;
-            color: var(--text-primary);
+            color: var(--text-muted);
             cursor: pointer;
             padding: 0.25rem;
+            font-size: 1.2rem;
+            line-height: 1;
         }
+        .modal-close:hover { color: var(--text-primary); }
+        .modal-icon {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .modal-icon svg { width: 24px; height: 24px; color: var(--accent); }
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.35rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .modal-sub {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        .modal-input {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            margin-bottom: 0.75rem;
+        }
+        .modal-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .modal-input::placeholder { color: var(--text-muted); }
+        .modal-btn {
+            width: 100%;
+            background: var(--gradient);
+            border: none;
+            border-radius: var(--radius);
+            padding: 0.75rem;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 0.25rem;
+        }
+        .modal-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(99,102,241,0.35); }
+        .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .modal-btn.loading { position: relative; color: transparent; }
+        .modal-btn.loading::after {
+            content: ''; position: absolute; inset: 50% auto auto 50%;
+            width: 18px; height: 18px; margin: -9px 0 0 -9px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%; animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .modal-error {
+            font-size: 0.78rem;
+            color: #f87171;
+            margin-bottom: 0.75rem;
+            display: none;
+        }
+        .modal-error.visible { display: block; }
+        .modal-link {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+        }
+        .modal-link span {
+            color: var(--accent);
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .modal-link span:hover { text-decoration: underline; }
+        .modal-btns-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        .modal-btns-row .modal-btn { flex: 1; }
+        .modal-btns-row .modal-btn.outline {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+        .modal-btns-row .modal-btn.outline:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: none;
+        }
+        /* PASSWORD STRENGTH */
+        .pwd-strength {
+            margin: -0.5rem 0 0.75rem;
+            display: none;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .pwd-strength.visible { display: flex; }
+        .pwd-strength .pwd-bar {
+            height: 3px;
+            border-radius: 2px;
+            background: var(--border);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        .pwd-strength .pwd-bar .pwd-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 2px;
+            transition: width 0.3s, background 0.3s;
+        }
+        .pwd-strength .pwd-label {
+            font-size: 0.65rem;
+            font-weight: 500;
+        }
+        .forgot-link {
+            text-align: right;
+            font-size: 0.78rem;
+            margin: -0.5rem 0 0.75rem;
+        }
+        .forgot-link a {
+            color: var(--text-muted);
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .forgot-link a:hover { color: var(--accent); text-decoration: underline; }
 
-        .sidebar-toggle svg {
-            width: 22px;
-            height: 22px;
+        .reset-link-display {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 1rem;
+            font-size: 0.8rem;
+            color: var(--accent);
+            word-break: break-all;
+            margin-bottom: 0.75rem;
+            user-select: all;
         }
     </style>
 </head>
 <body>
-    <div class="app-layout">
+    <!-- HEADER -->
+    <header class="app-header">
+        <div class="brand">
+            <button class="hamburger" id="hamburger">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+            </button>
+            <div class="logo">DM</div>
+            <div class="app-name"><span>DocMind</span> AI</div>
+            <span class="tagline">Understand your documents</span>
+        </div>
+        <div class="header-right">
+            <span class="q-counter" id="qCounter"><span class="q-num" id="qCountNum">0</span>/3 free questions used</span>
+            <span class="user-email-display" id="userEmailDisplay"></span>
+            <button class="auth-btn outline" id="loginBtn" style="display:none;">Login</button>
+            <button class="auth-btn" id="signupBtn" style="display:none;">Sign Up</button>
+            <button class="auth-btn outline" id="logoutBtn" style="display:none;">Logout</button>
+            <button class="hr-toggle" id="hrToggle">
+                <span class="hr-dot"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                </svg>
+                HR
+            </button>
+            <button class="new-doc-btn" id="newDocBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+                </svg>
+                New
+            </button>
+            <div class="status-pill">
+                <span class="dot" id="statusDot"></span>
+                <span class="label" id="statusLabel">No document</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- BODY -->
+    <div class="app-body">
         <!-- SIDEBAR -->
         <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="logo-icon">R</div>
-                <h1><span>RAG</span> Chatbot</h1>
-            </div>
-            <div class="sidebar-body">
+            <div class="sidebar-scroll">
                 <div>
-                    <div class="section-label">Document</div>
+                    <div class="section-label">Upload Document</div>
                     <div class="upload-zone" id="uploadZone">
-                        <div class="upload-icon" id="uploadIcon">
+                        <div class="upload-icon-box" id="uploadIcon">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                             </svg>
                         </div>
-                        <div class="upload-title" id="uploadTitle">Upload your PDF</div>
-                        <div class="upload-subtitle">Drag & drop or <span>browse</span></div>
-                        <input type="file" id="fileInput" accept=".pdf">
-                        <div class="progress-container" id="progressContainer">
-                            <div class="progress-bar-track">
-                                <div class="progress-bar-fill" id="progressFill"></div>
+                        <div class="upload-title" id="uploadTitle">Drop PDF here</div>
+                        <div class="upload-sub">or <span>browse files</span> &middot; PDF only</div>
+                        <input type="file" id="fileInput" accept=".pdf" style="display:none">
+                        <div class="progress-wrap" id="progressWrap">
+                            <div class="progress-track">
+                                <div class="progress-fill" id="progressFill"></div>
                             </div>
-                            <div class="progress-text">
+                            <div class="progress-labels">
                                 <span>Uploading...</span>
-                                <span id="progressPercent">0%</span>
+                                <span id="progressPct">0%</span>
                             </div>
                         </div>
-                        <div class="file-info" id="fileInfo">
-                            <div class="file-icon">PDF</div>
-                            <div class="file-details">
-                                <div class="name" id="fileName">document.pdf</div>
-                                <div class="size" id="fileSize">0 KB</div>
+                        <div class="file-card" id="fileCard">
+                            <div class="pdf-badge">PDF</div>
+                            <div class="file-meta">
+                                <div class="fname" id="fileName">document.pdf</div>
+                                <div class="fsize" id="fileSize">0 KB</div>
                             </div>
-                            <div class="file-status">
-                                <span class="status-badge" id="statusBadge">
-                                    <span id="statusText">Idle</span>
+                            <div>
+                                <span class="file-status-badge" id="fileStatusBadge">
+                                    <span id="fileStatusText">Idle</span>
                                 </span>
                             </div>
                         </div>
+                        <div class="summary-card" id="summaryCard">
+                            <div class="summary-toggle" id="summaryToggle">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <span>Document Summary</span>
+                                <svg class="summary-chevron" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:14px;height:14px;margin-left:auto;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                            </div>
+                            <div class="summary-body" id="summaryBody">
+                                <div class="summary-text" id="summaryText"></div>
+                                <div class="summary-topics" id="summaryTopics"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="doc-info" id="docInfo">
-                    <div class="section-label">Document Info</div>
-                    <div class="doc-info-row">
-                        <span class="label">Name</span>
-                        <span class="value" id="docName">—</span>
-                    </div>
-                    <div class="doc-info-row">
-                        <span class="label">Chunks</span>
-                        <span class="value" id="docChunks">—</span>
-                    </div>
-                    <div class="doc-info-row">
-                        <span class="label">Status</span>
-                        <span class="value" id="docStatus">Not loaded</span>
-                    </div>
+                <div class="doc-panel" id="docPanel">
+                    <div class="section-label">Document Details</div>
+                    <div class="doc-row"><span class="dl">Name</span><span class="dv" id="docName">—</span></div>
+                    <div class="doc-row"><span class="dl">Pages</span><span class="dv" id="docPages">—</span></div>
+                    <div class="doc-row"><span class="dl">Chunks</span><span class="dv" id="docChunks">—</span></div>
+                    <div class="doc-row"><span class="dl">Uploaded</span><span class="dv" id="docTime">—</span></div>
+                    <div class="sidebar-divider"></div>
+                    <div class="doc-row"><span class="dl">Status</span><span class="dv" id="docStatus">Not loaded</span></div>
                 </div>
 
-                <div class="sidebar-tips">
-                    <div class="tip-title">How it works</div>
-                    <div class="tip-text">
+                <div class="cv-list" id="cvList"></div>
+
+                <div class="sessions-section" id="sessionsSection">
+                    <div class="section-label section-label-row">
+                        <span>Conversations</span>
+                        <button class="new-session-btn" id="newSessionBtn">+ New</button>
+                    </div>
+                    <div class="sessions-list" id="sessionsList"></div>
+                </div>
+
+                <div class="sidebar-tip">
+                    <div class="tip-head">How to use</div>
+                    <div class="tip-body">
                         1. Upload a PDF document<br>
-                        2. Ask questions about its content<br>
-                        3. AI answers using only the document
+                        2. Ask questions naturally<br>
+                        3. AI answers from document only
+
                     </div>
                 </div>
             </div>
@@ -890,60 +1569,45 @@
 
         <!-- MAIN -->
         <div class="main-area">
-            <div class="main-header">
-                <div style="display:flex;align-items:center;gap:0.75rem;">
-                    <button class="sidebar-toggle" id="sidebarToggle">
+            <div class="chat-scroll" id="chatScroll">
+                <!-- HERO (shown before upload) -->
+                <div class="hero-section" id="heroSection">
+                    <div class="hero-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
                         </svg>
-                    </button>
-                    <div class="greeting">Ask anything <span>about your document</span></div>
-                </div>
-                <div style="display:flex;align-items:center;gap:0.75rem;">
-                    <button class="new-doc-btn" id="newDocBtn">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
-                        </svg>
-                        New Document
-                    </button>
-                    <div class="header-status">
-                        <span class="dot" id="statusDot"></span>
-                        <span id="headerStatusText">No document</span>
                     </div>
-                </div>
-            </div>
-
-            <div class="chat-wrapper">
-                <div class="chat-container" id="chatContainer">
-                    <div class="empty-state" id="emptyState">
-                        <div class="empty-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                            </svg>
+                    <h2>Ask Questions About Your Documents</h2>
+                    <p class="hero-sub">Upload a PDF and ask anything. Our AI reads the document and answers based only on its content — no hallucinations, no guesswork.</p>
+                    <button class="hero-cta" id="heroCta">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                        </svg>
+                        Upload your PDF
+                    </button>
+                    <div class="hero-features">
+                        <div class="hf-item">
+                            <div class="hf-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg></div>
+                            <span>Secure & Private</span>
                         </div>
-                        <h3>Upload a PDF to start chatting</h3>
-                        <p>Upload a document from the sidebar and ask questions. The AI will answer based solely on the document content.</p>
-                        <div class="empty-steps">
-                            <div class="step">
-                                <div class="step-num">1</div>
-                                <span>Upload PDF</span>
-                            </div>
-                            <div class="step">
-                                <div class="step-num">2</div>
-                                <span>Ask Questions</span>
-                            </div>
-                            <div class="step">
-                                <div class="step-num">3</div>
-                                <span>Get Answers</span>
-                            </div>
+                        <div class="hf-item">
+                            <div class="hf-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg></div>
+                            <span>Lightning Fast</span>
+                        </div>
+                        <div class="hf-item">
+                            <div class="hf-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg></div>
+                            <span>AI-Powered</span>
                         </div>
                     </div>
                 </div>
+
+                <!-- CHAT MESSAGES INSERTED HERE -->
             </div>
 
-            <div class="input-area">
+            <!-- INPUT -->
+            <div class="input-bar">
                 <div class="input-row">
-                    <input type="text" id="questionInput" placeholder="Ask a question about your document..." disabled autocomplete="off">
+                    <input type="text" id="questionInput" placeholder="Ask a question about your document..." disabled autocomplete="nope">
                     <button class="send-btn" id="sendBtn" disabled>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
@@ -952,50 +1616,731 @@
                     </button>
                 </div>
             </div>
+
+            <!-- FOOTER -->
+            <div class="app-footer" id="appFooter">
+                <span>DocMind AI</span>
+                <span class="footer-dot"></span>
+                <span>Powered by Groq &middot; ChromaDB</span>
+                <span class="footer-dot"></span>
+                <span>v1.0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- FREEMIUM LIMIT MODAL -->
+    <div class="modal-overlay" id="limitModal">
+        <div class="modal-card" style="text-align:center;">
+            <button class="modal-close" id="limitModalClose">&times;</button>
+            <div class="modal-icon" style="margin:0 auto 1rem;background:rgba(245,158,11,0.12);">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="color:#f59e0b;width:24px;height:24px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+            <div class="modal-title" style="font-size:1.4rem;">You've reached your free limit</div>
+            <div class="modal-sub" style="margin-bottom:0.5rem;">Sign up for free to continue unlimited</div>
+            <div class="modal-btns-row">
+                <button class="modal-btn" id="limitSignupBtn">Sign Up</button>
+                <button class="modal-btn outline" id="limitLoginBtn">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SIGNUP MODAL -->
+    <div class="modal-overlay" id="signupModal">
+        <div class="modal-card">
+            <button class="modal-close" id="signupClose">&times;</button>
+            <div class="modal-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+            </div>
+            <div class="modal-title">Create your account</div>
+            <div class="modal-sub">Get unlimited questions. Free forever.</div>
+            <div class="modal-error" id="signupError"></div>
+            <input class="modal-input" type="email" id="signupEmail" placeholder="Email address" autocomplete="email">
+            <input class="modal-input" type="password" id="signupPassword" placeholder="Password (min 8 characters)" autocomplete="new-password">
+            <div class="pwd-strength" id="pwdStrength">
+                <div class="pwd-bar"><div class="pwd-fill" id="pwdFill"></div></div>
+                <div class="pwd-label" id="pwdLabel"></div>
+            </div>
+            <button class="modal-btn" id="signupSubmit">Create Account</button>
+            <div class="modal-link">Already have an account? <span id="signupToLogin">Login</span></div>
+        </div>
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-card">
+            <button class="modal-close" id="loginClose">&times;</button>
+            <div class="modal-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+            </div>
+            <div class="modal-title">Welcome back</div>
+            <div class="modal-sub">Login to continue with unlimited questions.</div>
+            <div class="modal-error" id="loginError"></div>
+            <input class="modal-input" type="email" id="loginEmail" placeholder="Email address" autocomplete="email">
+            <input class="modal-input" type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+            <div class="forgot-link"><a id="forgotLink">Forgot Password?</a></div>
+            <button class="modal-btn" id="loginSubmit">Login</button>
+            <div class="modal-link">Don't have an account? <span id="loginToSignup">Sign Up</span></div>
+        </div>
+    </div>
+
+    <!-- FORGOT PASSWORD MODAL -->
+    <div class="modal-overlay" id="forgotModal">
+        <div class="modal-card" style="text-align:center;">
+            <button class="modal-close" id="forgotClose">&times;</button>
+            <div class="modal-icon" style="margin:0 auto 1rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+            </div>
+            <div class="modal-title" id="forgotModalTitle">Reset Password</div>
+            <div class="modal-sub" id="forgotModalSub">Enter your email to get a reset link.</div>
+            <div class="modal-error" id="forgotError"></div>
+            <div id="forgotStep1">
+                <input class="modal-input" type="email" id="forgotEmail" placeholder="Email address" autocomplete="email" style="text-align:center;">
+                <button class="modal-btn" id="forgotSubmit">Send Reset Link</button>
+            </div>
+            <div id="forgotStep2" style="display:none;">
+                <div class="reset-link-display" id="resetLinkDisplay"></div>
+                <button class="modal-btn" id="forgotToReset">Continue to Reset</button>
+            </div>
+            <div class="modal-link"><span id="forgotToLogin">Back to Login</span></div>
+        </div>
+    </div>
+
+    <!-- RESET PASSWORD MODAL -->
+    <div class="modal-overlay" id="resetModal">
+        <div class="modal-card">
+            <button class="modal-close" id="resetClose">&times;</button>
+            <div class="modal-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" /></svg>
+            </div>
+            <div class="modal-title">Set New Password</div>
+            <div class="modal-sub">Enter your new password below.</div>
+            <div class="modal-error" id="resetError"></div>
+            <input class="modal-input" type="password" id="resetPassword" placeholder="New password (min 8 characters)" autocomplete="new-password">
+            <div class="pwd-strength" id="resetPwdStrength">
+                <div class="pwd-bar"><div class="pwd-fill" id="resetPwdFill"></div></div>
+                <div class="pwd-label" id="resetPwdLabel"></div>
+            </div>
+            <button class="modal-btn" id="resetSubmit">Reset Password</button>
+            <div class="modal-link"><span id="resetToLogin">Back to Login</span></div>
         </div>
     </div>
 
     <script>
         let uploadedFileId = null;
+        let uploadedFileIds = [];
+        let hrMode = false;
+        let sessions = [];
+        let currentSessionId = null;
 
         const sidebar = document.getElementById('sidebar');
-        const sidebarToggle = document.getElementById('sidebarToggle');
+        const hamburger = document.getElementById('hamburger');
+
         const uploadZone = document.getElementById('uploadZone');
         const fileInput = document.getElementById('fileInput');
         const uploadIcon = document.getElementById('uploadIcon');
         const uploadTitle = document.getElementById('uploadTitle');
-        const progressContainer = document.getElementById('progressContainer');
+        const progressWrap = document.getElementById('progressWrap');
         const progressFill = document.getElementById('progressFill');
-        const progressPercent = document.getElementById('progressPercent');
-        const fileInfo = document.getElementById('fileInfo');
+        const progressPct = document.getElementById('progressPct');
+        const fileCard = document.getElementById('fileCard');
         const fileName = document.getElementById('fileName');
         const fileSize = document.getElementById('fileSize');
-        const statusBadge = document.getElementById('statusBadge');
-        const statusText = document.getElementById('statusText');
-        const docInfo = document.getElementById('docInfo');
+        const fileStatusBadge = document.getElementById('fileStatusBadge');
+        const fileStatusText = document.getElementById('fileStatusText');
+        const docPanel = document.getElementById('docPanel');
         const docName = document.getElementById('docName');
+        const docPages = document.getElementById('docPages');
         const docChunks = document.getElementById('docChunks');
+        const docTime = document.getElementById('docTime');
         const docStatus = document.getElementById('docStatus');
         const statusDot = document.getElementById('statusDot');
-        const headerStatusText = document.getElementById('headerStatusText');
+        const statusLabel = document.getElementById('statusLabel');
         const newDocBtn = document.getElementById('newDocBtn');
+        const heroSection = document.getElementById('heroSection');
+        const heroCta = document.getElementById('heroCta');
+        const chatScroll = document.getElementById('chatScroll');
         const questionInput = document.getElementById('questionInput');
         const sendBtn = document.getElementById('sendBtn');
-        const chatContainer = document.getElementById('chatContainer');
-        const emptyState = document.getElementById('emptyState');
+        const appFooter = document.getElementById('appFooter');
+        const sessionsSection = document.getElementById('sessionsSection');
+        const sessionsList = document.getElementById('sessionsList');
+        const newSessionBtn = document.getElementById('newSessionBtn');
+        const hrToggle = document.getElementById('hrToggle');
+        const cvList = document.getElementById('cvList');
 
-        sidebarToggle.addEventListener('click', () => {
+        /* AUTH & FREEMIUM */
+        let authToken = localStorage.getItem('docmind_token') || null;
+        let userEmail = localStorage.getItem('docmind_email') || null;
+        let questionCount = parseInt(localStorage.getItem('docmind_qcount') || '0', 10);
+        const FREE_LIMIT = 3;
+
+        const qCounter = document.getElementById('qCounter');
+        const qCountNum = document.getElementById('qCountNum');
+        const userEmailDisplay = document.getElementById('userEmailDisplay');
+        const loginBtn = document.getElementById('loginBtn');
+        const signupBtn = document.getElementById('signupBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        const limitModal = document.getElementById('limitModal');
+        const limitModalClose = document.getElementById('limitModalClose');
+        const limitSignupBtn = document.getElementById('limitSignupBtn');
+        const limitLoginBtn = document.getElementById('limitLoginBtn');
+
+        const signupModal = document.getElementById('signupModal');
+        const signupClose = document.getElementById('signupClose');
+        const signupEmail = document.getElementById('signupEmail');
+        const signupPassword = document.getElementById('signupPassword');
+        const signupSubmit = document.getElementById('signupSubmit');
+        const signupError = document.getElementById('signupError');
+        const signupToLogin = document.getElementById('signupToLogin');
+
+        const loginModal = document.getElementById('loginModal');
+        const loginClose = document.getElementById('loginClose');
+        const loginEmail = document.getElementById('loginEmail');
+        const loginPassword = document.getElementById('loginPassword');
+        const loginSubmit = document.getElementById('loginSubmit');
+        const loginError = document.getElementById('loginError');
+        const loginToSignup = document.getElementById('loginToSignup');
+
+        const forgotModal = document.getElementById('forgotModal');
+        const forgotClose = document.getElementById('forgotClose');
+        const forgotEmail = document.getElementById('forgotEmail');
+        const forgotSubmit = document.getElementById('forgotSubmit');
+        const forgotError = document.getElementById('forgotError');
+        const forgotStep1 = document.getElementById('forgotStep1');
+        const forgotStep2 = document.getElementById('forgotStep2');
+        const resetLinkDisplay = document.getElementById('resetLinkDisplay');
+        const forgotToReset = document.getElementById('forgotToReset');
+        const forgotToLogin = document.getElementById('forgotToLogin');
+        const forgotLink = document.getElementById('forgotLink');
+        let pendingResetToken = null;
+
+        const resetModal = document.getElementById('resetModal');
+        const resetClose = document.getElementById('resetClose');
+        const resetPassword = document.getElementById('resetPassword');
+        const resetSubmit = document.getElementById('resetSubmit');
+        const resetError = document.getElementById('resetError');
+        const resetToLogin = document.getElementById('resetToLogin');
+        const resetPwdStrength = document.getElementById('resetPwdStrength');
+        const resetPwdFill = document.getElementById('resetPwdFill');
+        const resetPwdLabel = document.getElementById('resetPwdLabel');
+
+        const pwdStrength = document.getElementById('pwdStrength');
+        const pwdFill = document.getElementById('pwdFill');
+        const pwdLabel = document.getElementById('pwdLabel');
+
+        function checkPasswordStrength(pwd) {
+            let score = 0;
+            if (pwd.length >= 8) score = 1;
+            if (score && /[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score = 2;
+            if (score >= 2 && /\d/.test(pwd)) score = 3;
+            if (score >= 3 && /[^a-zA-Z0-9]/.test(pwd)) score = 4;
+            const levels = ['', 'Weak', 'Fair', 'Strong', 'Very Strong'];
+            const colors = ['', '#f87171', '#fb923c', '#22d65e', '#22d65e'];
+            const widths = ['0%', '25%', '50%', '75%', '100%'];
+            return { label: levels[score], color: colors[score], width: widths[score] };
+        }
+
+        function updatePwdStrengthUI(pwd, fillEl, labelEl, outerEl) {
+            if (!pwd) { outerEl.classList.remove('visible'); return; }
+            outerEl.classList.add('visible');
+            const r = checkPasswordStrength(pwd);
+            fillEl.style.width = r.width;
+            fillEl.style.background = r.color;
+            labelEl.textContent = r.label;
+            labelEl.style.color = r.color;
+        }
+
+        signupPassword.addEventListener('input', () => {
+            updatePwdStrengthUI(signupPassword.value, pwdFill, pwdLabel, pwdStrength);
+        });
+
+        resetPassword.addEventListener('input', () => {
+            updatePwdStrengthUI(resetPassword.value, resetPwdFill, resetPwdLabel, resetPwdStrength);
+        });
+
+        /* Forgot Password flow */
+        let resetTokenGenerated = null;
+
+        function showForgotModal() {
+            closeAllModals();
+            forgotEmail.value = '';
+            forgotError.classList.remove('visible');
+            forgotStep1.style.display = 'block';
+            forgotStep2.style.display = 'none';
+            forgotModal.classList.add('active');
+            setTimeout(() => forgotEmail.focus(), 100);
+        }
+
+        forgotLink.addEventListener('click', showForgotModal);
+        forgotClose.addEventListener('click', closeAllModals);
+        forgotModal.addEventListener('click', (e) => { if (e.target === forgotModal) closeAllModals(); });
+        forgotToLogin.addEventListener('click', () => { closeAllModals(); showLoginModal(); });
+
+        forgotSubmit.addEventListener('click', async () => {
+            const email = forgotEmail.value.trim();
+            if (!email) { forgotError.textContent = 'Email is required'; forgotError.classList.add('visible'); return; }
+            forgotError.classList.remove('visible');
+            forgotSubmit.classList.add('loading');
+            forgotSubmit.disabled = true;
+            try {
+                const res = await fetch('/api/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    resetTokenGenerated = data.reset_token;
+                    forgotStep1.style.display = 'none';
+                    forgotStep2.style.display = 'block';
+                    resetLinkDisplay.textContent = 'Reset token: ' + data.reset_token;
+                } else {
+                    forgotError.textContent = data.error || 'Failed to generate reset link';
+                    forgotError.classList.add('visible');
+                }
+            } catch (err) {
+                forgotError.textContent = 'Network error. Please try again.';
+                forgotError.classList.add('visible');
+            }
+            forgotSubmit.classList.remove('loading');
+            forgotSubmit.disabled = false;
+        });
+
+        forgotEmail.addEventListener('keydown', (e) => { if (e.key === 'Enter') forgotSubmit.click(); });
+
+        forgotToReset.addEventListener('click', () => {
+            if (!resetTokenGenerated) return;
+            closeAllModals();
+            resetPassword.value = '';
+            resetError.classList.remove('visible');
+            resetPwdStrength.classList.remove('visible');
+            resetModal.classList.add('active');
+            setTimeout(() => resetPassword.focus(), 100);
+        });
+
+        /* Reset Password */
+        resetClose.addEventListener('click', closeAllModals);
+        resetModal.addEventListener('click', (e) => { if (e.target === resetModal) closeAllModals(); });
+        resetToLogin.addEventListener('click', () => { closeAllModals(); showLoginModal(); });
+
+        resetSubmit.addEventListener('click', async () => {
+            const password = resetPassword.value;
+            if (!password || password.length < 8) {
+                resetError.textContent = 'Password must be at least 8 characters';
+                resetError.classList.add('visible');
+                return;
+            }
+            if (!resetTokenGenerated) {
+                resetError.textContent = 'Reset token is missing. Please start over.';
+                resetError.classList.add('visible');
+                return;
+            }
+            resetError.classList.remove('visible');
+            resetSubmit.classList.add('loading');
+            resetSubmit.disabled = true;
+            try {
+                const res = await fetch('/api/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: resetTokenGenerated, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    saveAuth(data.token, data.email);
+                    resetTokenGenerated = null;
+                } else {
+                    resetError.textContent = data.error || 'Reset failed';
+                    resetError.classList.add('visible');
+                }
+            } catch (err) {
+                resetError.textContent = 'Network error. Please try again.';
+                resetError.classList.add('visible');
+            }
+            resetSubmit.classList.remove('loading');
+            resetSubmit.disabled = false;
+        });
+
+        resetPassword.addEventListener('keydown', (e) => { if (e.key === 'Enter') resetSubmit.click(); });
+
+        function updateAuthUI() {
+            if (authToken && userEmail) {
+                qCounter.classList.remove('visible');
+                userEmailDisplay.textContent = userEmail;
+                userEmailDisplay.classList.add('visible');
+                loginBtn.style.display = 'none';
+                signupBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-flex';
+            } else {
+                userEmailDisplay.classList.remove('visible');
+                loginBtn.style.display = 'inline-flex';
+                signupBtn.style.display = 'inline-flex';
+                logoutBtn.style.display = 'none';
+                updateQCounter();
+            }
+        }
+
+        function updateQCounter() {
+            if (authToken) { qCounter.classList.remove('visible'); return; }
+            qCountNum.textContent = Math.min(questionCount, FREE_LIMIT);
+            qCounter.classList.toggle('visible', questionCount >= 0 && questionCount <= FREE_LIMIT);
+        }
+
+        function incrementQCount() {
+            if (authToken) return;
+            questionCount++;
+            localStorage.setItem('docmind_qcount', String(questionCount));
+            updateQCounter();
+        }
+
+        function saveAuth(token, email) {
+            authToken = token;
+            userEmail = email;
+            localStorage.setItem('docmind_token', token);
+            localStorage.setItem('docmind_email', email);
+            questionCount = 0;
+            localStorage.setItem('docmind_qcount', '0');
+            updateAuthUI();
+            closeAllModals();
+        }
+
+        function clearAuth() {
+            authToken = null;
+            userEmail = null;
+            localStorage.removeItem('docmind_token');
+            localStorage.removeItem('docmind_email');
+            questionCount = 0;
+            localStorage.setItem('docmind_qcount', '0');
+            updateAuthUI();
+        }
+
+        function closeAllModals() {
+            limitModal.classList.remove('active');
+            signupModal.classList.remove('active');
+            loginModal.classList.remove('active');
+            forgotModal.classList.remove('active');
+            resetModal.classList.remove('active');
+            signupError.classList.remove('visible');
+            loginError.classList.remove('visible');
+            forgotError.classList.remove('visible');
+            resetError.classList.remove('visible');
+            signupSubmit.classList.remove('loading');
+            loginSubmit.classList.remove('loading');
+            forgotSubmit.classList.remove('loading');
+            resetSubmit.classList.remove('loading');
+            signupSubmit.disabled = false;
+            loginSubmit.disabled = false;
+            forgotSubmit.disabled = false;
+            resetSubmit.disabled = false;
+        }
+
+        function showLimitModal() {
+            limitModal.classList.add('active');
+        }
+
+        function showSignupModal() {
+            closeAllModals();
+            signupEmail.value = '';
+            signupPassword.value = '';
+            signupError.classList.remove('visible');
+            signupModal.classList.add('active');
+            setTimeout(() => signupEmail.focus(), 100);
+        }
+
+        function showLoginModal() {
+            closeAllModals();
+            loginEmail.value = '';
+            loginPassword.value = '';
+            loginError.classList.remove('visible');
+            loginModal.classList.add('active');
+            setTimeout(() => loginEmail.focus(), 100);
+        }
+
+        /* Modal event listeners */
+        limitModalClose.addEventListener('click', closeAllModals);
+        limitModal.addEventListener('click', (e) => { if (e.target === limitModal) closeAllModals(); });
+        limitSignupBtn.addEventListener('click', showSignupModal);
+        limitLoginBtn.addEventListener('click', showLoginModal);
+
+        signupClose.addEventListener('click', closeAllModals);
+        signupModal.addEventListener('click', (e) => { if (e.target === signupModal) closeAllModals(); });
+        signupToLogin.addEventListener('click', showLoginModal);
+
+        loginClose.addEventListener('click', closeAllModals);
+        loginModal.addEventListener('click', (e) => { if (e.target === loginModal) closeAllModals(); });
+        loginToSignup.addEventListener('click', showSignupModal);
+
+        loginBtn.addEventListener('click', showLoginModal);
+        signupBtn.addEventListener('click', showSignupModal);
+        logoutBtn.addEventListener('click', () => {
+            clearAuth();
+            closeAllModals();
+        });
+
+        /* Signup form submit */
+        signupSubmit.addEventListener('click', async () => {
+            const email = signupEmail.value.trim();
+            const password = signupPassword.value;
+            if (!email) { signupError.textContent = 'Email is required'; signupError.classList.add('visible'); return; }
+            if (!password || password.length < 8) { signupError.textContent = 'Password must be at least 8 characters'; signupError.classList.add('visible'); return; }
+            signupError.classList.remove('visible');
+            signupSubmit.classList.add('loading');
+            signupSubmit.disabled = true;
+            try {
+                const res = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    saveAuth(data.token, data.email);
+                } else {
+                    signupError.textContent = data.error || 'Signup failed';
+                    signupError.classList.add('visible');
+                }
+            } catch (err) {
+                signupError.textContent = 'Network error. Please try again.';
+                signupError.classList.add('visible');
+            }
+            signupSubmit.classList.remove('loading');
+            signupSubmit.disabled = false;
+        });
+
+        signupPassword.addEventListener('keydown', (e) => { if (e.key === 'Enter') signupSubmit.click(); });
+        signupEmail.addEventListener('keydown', (e) => { if (e.key === 'Enter') signupPassword.focus(); });
+
+        /* Login form submit */
+        loginSubmit.addEventListener('click', async () => {
+            const email = loginEmail.value.trim();
+            const password = loginPassword.value;
+            if (!email) { loginError.textContent = 'Email is required'; loginError.classList.add('visible'); return; }
+            if (!password) { loginError.textContent = 'Password is required'; loginError.classList.add('visible'); return; }
+            loginError.classList.remove('visible');
+            loginSubmit.classList.add('loading');
+            loginSubmit.disabled = true;
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    saveAuth(data.token, data.email);
+                } else {
+                    loginError.textContent = data.error || 'Login failed';
+                    loginError.classList.add('visible');
+                }
+            } catch (err) {
+                loginError.textContent = 'Network error. Please try again.';
+                loginError.classList.add('visible');
+            }
+            loginSubmit.classList.remove('loading');
+            loginSubmit.disabled = false;
+        });
+
+        loginPassword.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginSubmit.click(); });
+        loginEmail.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginPassword.focus(); });
+
+        /* Clear any browser autofill from the question input */
+        questionInput.value = '';
+        setTimeout(() => { questionInput.value = ''; }, 200);
+
+        /* Init auth UI */
+        if (authToken && userEmail) {
+            fetch('/api/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: authToken })
+            }).then(r => r.json()).then(d => {
+                if (!d.success) clearAuth();
+                else updateAuthUI();
+            }).catch(() => { /* keep token on network failure */ });
+            updateAuthUI();
+        } else {
+            updateAuthUI();
+        }
+
+        hrToggle.addEventListener('click', () => {
+            hrMode = !hrMode;
+            hrToggle.classList.toggle('active', hrMode);
+            document.body.classList.toggle('hr-active', hrMode);
+            if (hrMode) {
+                fileInput.setAttribute('multiple', 'multiple');
+                uploadTitle.textContent = 'Drop CVs here';
+                questionInput.placeholder = 'Search candidates... e.g. find Python developer with 2 years experience';
+            } else {
+                fileInput.removeAttribute('multiple');
+                uploadTitle.textContent = 'Drop PDF here';
+                questionInput.placeholder = 'Ask a question about your document...';
+            }
+            cvList.classList.toggle('active', hrMode && uploadedFileIds.length > 0);
+        });
+
+        function getCurrentSession() {
+            return sessions.find(s => s.id === currentSessionId);
+        }
+
+        function saveSessions() {
+            try { localStorage.setItem('docmind_sessions', JSON.stringify(sessions)); } catch {}
+        }
+
+        function loadSessions() {
+            try {
+                const raw = localStorage.getItem('docmind_sessions');
+                if (raw) { sessions = JSON.parse(raw); }
+            } catch { sessions = []; }
+        }
+
+        function generatePreview(messages) {
+            for (const m of messages) {
+                if (m.role === 'user') return m.content.slice(0, 50) + (m.content.length > 50 ? '...' : '');
+            }
+            return 'New conversation';
+        }
+
+        function renderSessions() {
+            sessionsList.innerHTML = '';
+            if (!sessions.length) { sessionsSection.classList.remove('active'); return; }
+            sessionsSection.classList.add('active');
+            sessions.forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'session-item' + (s.id === currentSessionId ? ' active' : '');
+                div.dataset.id = s.id;
+                div.innerHTML = `
+                    <div class="s-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg>
+                    </div>
+                    <div class="s-body">
+                        <div class="s-preview">${generatePreview(s.messages)}</div>
+                        <div class="s-time">${s.createdAt}</div>
+                    </div>
+                    <button class="s-del" title="Delete session">&times;</button>
+                `;
+                div.addEventListener('click', (e) => {
+                    if (e.target.closest('.s-del')) return;
+                    switchSession(s.id);
+                });
+                div.querySelector('.s-del').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    sessions = sessions.filter(x => x.id !== s.id);
+                    if (currentSessionId === s.id) {
+                        if (sessions.length) switchSession(sessions[0].id);
+                        else { currentSessionId = null; resetDocument(); }
+                    }
+                    saveSessions();
+                    renderSessions();
+                });
+                sessionsList.appendChild(div);
+            });
+        }
+
+        function switchSession(id) {
+            const prev = getCurrentSession();
+            if (prev) prev.messages = getChatMessages();
+
+            currentSessionId = id;
+            const session = getCurrentSession();
+            if (!session) return;
+            questionInput.value = '';
+
+            uploadedFileId = session.fileId;
+            uploadedFileIds = session.fileIds || [];
+            hrMode = session._hrMode || false;
+            hrToggle.classList.toggle('active', hrMode);
+            document.body.classList.toggle('hr-active', hrMode);
+
+            if (hrMode && uploadedFileIds.length) {
+                cvList.innerHTML = '';
+                uploadedFileIds.forEach((fid, idx) => {
+                    const item = document.createElement('div');
+                    item.className = 'cv-item';
+                    item.innerHTML = '<div class="cv-icon">PDF</div><div class="cv-name">CV ' + (idx + 1) + '</div><div class="cv-check"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg></div>';
+                    cvList.appendChild(item);
+                });
+                cvList.classList.add('active');
+            } else {
+                cvList.classList.remove('active');
+            }
+
+            if (session.fileId) {
+                newDocBtn.classList.add('visible');
+                docPanel.classList.add('active');
+                docName.textContent = session.fileName || (hrMode ? 'HR Mode' : 'Document');
+                questionInput.disabled = false;
+                sendBtn.disabled = false;
+                appFooter.classList.add('visible');
+                setStatus('Ready', 'online');
+            }
+
+            chatScroll.querySelectorAll('.msg-group').forEach(el => el.remove());
+            heroSection.style.display = 'none';
+            session.messages.forEach(m => addMessage(m.role, m.content, m.role === 'assistant' ? m.lang : null));
+
+            saveSessions();
+            renderSessions();
+        }
+
+        function createNewSession(fileId, fileName) {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' +
+                           now.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            const session = {
+                id: 'sess_' + Date.now(),
+                fileId: fileId || null,
+                fileIds: hrMode ? [...uploadedFileIds] : null,
+                _hrMode: hrMode || false,
+                fileName: fileName || '',
+                messages: [],
+                createdAt: timeStr
+            };
+            sessions.unshift(session);
+            currentSessionId = session.id;
+            renderSessions();
+            saveSessions();
+            return session;
+        }
+
+        function getChatMessages() {
+            const groups = chatScroll.querySelectorAll('.msg-group');
+            const msgs = [];
+            groups.forEach(g => {
+                const row = g.querySelector('.msg-row');
+                if (!row) return;
+                const role = row.classList.contains('user') ? 'user' : 'assistant';
+                const bubble = row.querySelector('.m-bubble');
+                const langEl = row.querySelector('.m-lang');
+                if (bubble) {
+                    const storedLang = langEl ? langEl.dataset.lang || langEl.textContent : 'english';
+                    msgs.push({ role, content: bubble.textContent, lang: storedLang });
+                }
+            });
+            return msgs;
+        }
+
+        loadSessions();
+        if (sessions.length) {
+            switchSession(sessions[0].id);
+        }
+
+        hamburger.addEventListener('click', () => {
             sidebar.classList.toggle('open');
         });
 
+        heroCta.addEventListener('click', () => {
+            fileInput.click();
+        });
+
         uploadZone.addEventListener('click', (e) => {
-            if (uploadedFileId) return;
+            if (!hrMode && uploadedFileId) return;
             fileInput.click();
         });
 
         uploadZone.addEventListener('dragover', (e) => {
             e.preventDefault();
-            if (!uploadedFileId) uploadZone.classList.add('dragover');
+            if (!hrMode && uploadedFileId) return;
+            uploadZone.classList.add('dragover');
         });
 
         uploadZone.addEventListener('dragleave', () => {
@@ -1005,17 +2350,32 @@
         uploadZone.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadZone.classList.remove('dragover');
-            if (uploadedFileId) return;
-            const file = e.dataTransfer.files[0];
-            if (file && file.type === 'application/pdf') {
-                uploadFile(file);
+            const files = e.dataTransfer.files;
+            if (!files || !files.length) return;
+            if (hrMode) {
+                for (const f of files) {
+                    if (f.type === 'application/pdf') uploadFile(f, true);
+                }
+            } else {
+                if (uploadedFileId) return;
+                const file = files[0];
+                if (file && file.type === 'application/pdf') uploadFile(file, false);
             }
         });
 
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            uploadFile(file);
+        fileInput.addEventListener('change', () => {
+            const files = fileInput.files;
+            if (!files || !files.length) return;
+            if (hrMode) {
+                for (const f of files) {
+                    if (f.type === 'application/pdf') uploadFile(f, true);
+                }
+            } else {
+                if (uploadedFileId) return;
+                const file = files[0];
+                if (file && file.type === 'application/pdf') uploadFile(file, false);
+            }
+            fileInput.value = '';
         });
 
         function formatSize(bytes) {
@@ -1024,22 +2384,29 @@
             return (bytes / 1048576).toFixed(1) + ' MB';
         }
 
-        function uploadFile(file) {
-            uploadZone.classList.add('uploaded');
-            uploadIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="color:var(--success);width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>`;
-            uploadTitle.textContent = file.name;
+        function formatTime() {
+            const now = new Date();
+            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' +
+                   now.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        }
 
-            fileName.textContent = file.name;
-            fileSize.textContent = formatSize(file.size);
-            fileInfo.classList.add('active');
+        function uploadFile(file, bulk) {
+            if (!bulk) {
+                uploadZone.classList.add('uploaded');
+                uploadIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="color:var(--success);width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>';
+                uploadTitle.textContent = file.name;
+                fileName.textContent = file.name;
+                fileSize.textContent = formatSize(file.size);
+                fileCard.classList.add('active');
+            }
 
-            statusBadge.className = 'status-badge uploading';
-            statusText.textContent = 'Uploading...';
-            progressContainer.classList.add('active');
+            fileStatusBadge.className = 'file-status-badge uploading';
+            fileStatusText.textContent = 'Uploading...';
+            progressWrap.classList.add('active');
             progressFill.style.width = '0%';
-            progressPercent.textContent = '0%';
+            progressPct.textContent = '0%';
 
-            setHeaderStatus('Uploading...', 'bg-tertiary');
+
 
             const formData = new FormData();
             formData.append('file', file);
@@ -1050,35 +2417,89 @@
                 if (e.lengthComputable) {
                     const pct = Math.round((e.loaded / e.total) * 100);
                     progressFill.style.width = pct + '%';
-                    progressPercent.textContent = pct + '%';
+                    progressPct.textContent = pct + '%';
                 }
             });
 
             xhr.addEventListener('load', () => {
-                progressContainer.classList.remove('active');
+
                 if (xhr.status >= 200 && xhr.status < 300) {
                     try {
                         const data = JSON.parse(xhr.responseText);
                         if (data.success) {
-                            uploadedFileId = data.file_id;
-                            newDocBtn.classList.add('visible');
-                            statusBadge.className = 'status-badge ready';
-                            statusText.innerHTML = 'Ready <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="vertical-align:middle;"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>';
-                            questionInput.disabled = false;
-                            sendBtn.disabled = false;
-                            questionInput.focus();
+                            if (bulk) {
+                                uploadedFileIds.push(data.file_id);
+                                if (!uploadedFileId) uploadedFileId = data.file_id;
+                                updateCvList(file.name);
+                                if (uploadedFileIds.length === 1) {
+                                    chatScroll.querySelectorAll('.msg-group').forEach(el => el.remove());
+                                    const session = createNewSession(data.file_id, 'HR: CVs (' + uploadedFileIds.length + ')');
+                                    session.fileIds = [...uploadedFileIds];
+                                    session.fileName = 'HR: CVs';
+                                    session._hrMode = true;
+                                    heroSection.style.display = 'none';
+                                    newDocBtn.classList.add('visible');
+                                    docPanel.classList.add('active');
+                                    docName.textContent = 'HR Mode (' + uploadedFileIds.length + ' CVs)';
+                                    docPages.textContent = '—';
+                                    docChunks.textContent = data.chunks;
+                                    docTime.textContent = formatTime();
+                                    docStatus.textContent = 'Ready';
+                                    docStatus.style.color = 'var(--success)';
+                                    questionInput.disabled = false;
+                                    sendBtn.disabled = false;
+                                    appFooter.classList.add('visible');
+                                    setStatus('Ready', 'online');
+                                    addMessage('ai', 'HR Mode active. ' + uploadedFileIds.length + ' CV uploaded. Upload more or search candidates.');
+                                    if (session) { session.messages = getChatMessages(); saveSessions(); }
+                                } else {
+                                    const sess = getCurrentSession();
+                                    if (sess) {
+                                        sess.fileIds = [...uploadedFileIds];
+                                        docName.textContent = 'HR Mode (' + uploadedFileIds.length + ' CVs)';
+                                    }
+                                    addMessage('ai', 'Uploaded **' + file.name + '**. ' + uploadedFileIds.length + ' CVs loaded.');
+                                    if (sess) { sess.messages = getChatMessages(); saveSessions(); }
+                                }
+                            } else {
+                                uploadedFileId = data.file_id;
+                                chatScroll.querySelectorAll('.msg-group').forEach(el => el.remove());
+                                const session = createNewSession(data.file_id, file.name);
+                                session.fileName = file.name;
+                                newDocBtn.classList.add('visible');
+                                fileStatusBadge.className = 'file-status-badge ready';
+                                fileStatusText.innerHTML = 'Ready <svg class="checkmark-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="vertical-align:middle;"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>';
+                                questionInput.disabled = false;
+                                sendBtn.disabled = false;
+                                questionInput.focus();
+                                docPanel.classList.add('active');
+                                docName.textContent = file.name;
+                                docPages.textContent = data.pages || '?';
+                                docChunks.textContent = data.chunks;
+                                docTime.textContent = formatTime();
+                                docStatus.textContent = 'Ready';
+                                docStatus.style.color = 'var(--success)';
+                                setStatus('Ready', 'online');
+                                appFooter.classList.add('visible');
+                                addMessage('ai', 'Uploaded **' + file.name + '** successfully. You can now ask questions about the document.');
+                                const sess = getCurrentSession();
+                                if (sess) { sess.messages = getChatMessages(); saveSessions(); }
+                                if (window.innerWidth <= 768) { sidebar.classList.remove('open'); }
+                                if (data.summary) {
+                                    document.getElementById('summaryText').textContent = data.summary;
+                                    const topicsEl = document.getElementById('summaryTopics');
+                                    topicsEl.innerHTML = '';
+                                    if (data.topics && data.topics.length) {
+                                        data.topics.forEach(t => {
+                                            const tag = document.createElement('span');
+                                            tag.className = 'topic-tag';
+                                            tag.textContent = t;
+                                            topicsEl.appendChild(tag);
+                                        });
+                                    }
+                                    document.getElementById('summaryCard').classList.add('active');
+                                }
 
-                            docInfo.classList.add('active');
-                            docName.textContent = file.name;
-                            docChunks.textContent = data.chunks;
-                            docStatus.textContent = 'Ready';
-
-                            setHeaderStatus('Ready', 'online');
-
-                            addMessage('ai', 'Uploaded **' + file.name + '** successfully. You can now ask questions about the document.');
-
-                            if (window.innerWidth <= 768) {
-                                sidebar.classList.remove('open');
                             }
                         } else {
                             handleUploadError(data.error || 'Upload failed');
@@ -1099,21 +2520,29 @@
             xhr.send(formData);
         }
 
+        function updateCvList(name) {
+            const item = document.createElement('div');
+            item.className = 'cv-item';
+            item.innerHTML = '<div class="cv-icon">PDF</div><div class="cv-name">' + name + '</div><div class="cv-check"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg></div>';
+            cvList.appendChild(item);
+            cvList.classList.add('active');
+        }
+
         function handleUploadError(msg) {
-            progressContainer.classList.remove('active');
+            progressWrap.classList.remove('active');
             uploadZone.classList.remove('uploaded');
-            uploadIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>`;
-            uploadTitle.textContent = 'Upload your PDF';
-            fileInfo.classList.remove('active');
-            statusBadge.className = 'status-badge error';
-            statusText.textContent = 'Error';
-            setHeaderStatus('Error', '');
+            uploadIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>';
+            uploadTitle.textContent = 'Drop PDF here';
+            fileCard.classList.remove('active');
+            fileStatusBadge.className = 'file-status-badge error';
+            fileStatusText.textContent = 'Error';
+            setStatus('Error', '');
             addMessage('ai', 'Upload failed: ' + msg);
         }
 
-        function setHeaderStatus(text, dotClass) {
-            headerStatusText.textContent = text;
-            statusDot.className = 'dot' + (dotClass ? ' ' + dotClass : '');
+        function setStatus(text, cls) {
+            statusLabel.textContent = text;
+            statusDot.className = 'dot' + (cls ? ' ' + cls : '');
         }
 
         newDocBtn.addEventListener('click', () => {
@@ -1121,33 +2550,64 @@
             resetDocument();
         });
 
+        newSessionBtn.addEventListener('click', () => {
+            if (!uploadedFileId && !uploadedFileIds.length) return;
+            chatScroll.querySelectorAll('.msg-group').forEach(el => el.remove());
+            heroSection.style.display = 'none';
+            const session = hrMode
+                ? createNewSession(uploadedFileIds[0], 'HR: CVs (' + uploadedFileIds.length + ')')
+                : createNewSession(uploadedFileId, docName.textContent);
+            if (hrMode) { session.fileIds = [...uploadedFileIds]; session._hrMode = true; }
+            addMessage('ai', hrMode ? 'New HR session started. Search candidates across ' + uploadedFileIds.length + ' CVs.' : 'Started a new conversation. Ask anything about your document.');
+            if (session) { session.messages = getChatMessages(); saveSessions(); }
+        });
+
         function resetDocument() {
             uploadedFileId = null;
+            uploadedFileIds = [];
+            currentSessionId = null;
+            hrMode = false;
+            hrToggle.classList.remove('active');
+            document.body.classList.remove('hr-active');
+            fileInput.removeAttribute('multiple');
+            uploadTitle.textContent = 'Drop PDF here';
+            questionInput.placeholder = 'Ask a question about your document...';
             newDocBtn.classList.remove('visible');
 
             questionInput.disabled = true;
             sendBtn.disabled = true;
             questionInput.value = '';
 
-            chatContainer.querySelectorAll('.message').forEach(el => el.remove());
-            emptyState.style.display = 'flex';
+            chatScroll.querySelectorAll('.msg-group').forEach(el => el.remove());
+            heroSection.style.display = 'flex';
 
             uploadZone.classList.remove('uploaded');
             uploadIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>';
-            uploadTitle.textContent = 'Upload your PDF';
-            fileInfo.classList.remove('active');
-            progressContainer.classList.remove('active');
+            uploadTitle.textContent = 'Drop PDF here';
+            fileCard.classList.remove('active');
+            progressWrap.classList.remove('active');
             progressFill.style.width = '0%';
-            progressPercent.textContent = '0%';
-            statusBadge.className = 'status-badge';
-            statusText.textContent = 'Idle';
+            progressPct.textContent = '0%';
+            fileStatusBadge.className = 'file-status-badge';
+            fileStatusText.textContent = 'Idle';
+            cvList.innerHTML = '';
+            cvList.classList.remove('active');
+            document.getElementById('summaryCard').classList.remove('active');
+            document.getElementById('summaryCard').classList.remove('collapsed');
+            document.getElementById('summaryText').textContent = '';
+            document.getElementById('summaryTopics').innerHTML = '';
 
-            docInfo.classList.remove('active');
+            docPanel.classList.remove('active');
             docName.textContent = '—';
+            docPages.textContent = '—';
             docChunks.textContent = '—';
+            docTime.textContent = '—';
             docStatus.textContent = 'Not loaded';
+            docStatus.style.color = '';
 
-            setHeaderStatus('No document', '');
+            appFooter.classList.remove('visible');
+            setStatus('No document', '');
+            renderSessions();
         }
 
         sendBtn.addEventListener('click', askQuestion);
@@ -1158,121 +2618,234 @@
             }
         });
 
+        document.getElementById('summaryToggle').addEventListener('click', () => {
+            document.getElementById('summaryCard').classList.toggle('collapsed');
+        });
+
         async function askQuestion() {
             const question = questionInput.value.trim();
-            if (!question || !uploadedFileId) return;
+            const payloadFileIds = hrMode ? uploadedFileIds : null;
+            if (!question || (!uploadedFileId && !payloadFileIds)) return;
+
+            /* Freemium limit check */
+            if (!authToken && questionCount >= FREE_LIMIT) {
+                showLimitModal();
+                return;
+            }
+
+            /* Track question for free users */
+            if (!authToken) incrementQCount();
+
+            const session = getCurrentSession();
+            const history = session ? session.messages.map(m => ({ role: m.role, content: m.content })) : [];
 
             addMessage('user', question);
+            if (session) session.messages = getChatMessages();
+            saveSessions();
+
             questionInput.value = '';
             questionInput.disabled = true;
             sendBtn.disabled = true;
 
             const typingId = addTypingIndicator();
+            let streamed = false;
 
             try {
-                const res = await fetch('/chat', {
+                const body = hrMode
+                    ? { question, file_ids: payloadFileIds.length ? payloadFileIds : [uploadedFileId], mode: 'hr', history, token: authToken, question_count: questionCount }
+                    : { question, file_id: uploadedFileId, history, token: authToken, question_count: questionCount };
+
+                const res = await fetch('/chat_stream', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question, file_id: uploadedFileId })
+                    body: JSON.stringify(body)
                 });
-                const data = await res.json();
 
-                removeTypingIndicator(typingId);
+                const contentType = res.headers.get('content-type') || '';
 
-                if (data.success) {
-                    addMessage('ai', data.answer);
+                if (contentType.includes('text/event-stream') && res.body) {
+                    const reader = res.body.getReader();
+                    const decoder = new TextDecoder();
+                    let lang = 'english';
+                    let bubbleEl = null;
+                    let buffer = '';
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop();
+                        for (const line of lines) {
+                            if (!line.startsWith('data: ')) continue;
+                            const payload = line.slice(6);
+                            if (payload === '[DONE]') continue;
+                            try {
+                                const parsed = JSON.parse(payload);
+                                if (parsed.type === 'lang') {
+                                    lang = parsed.lang;
+                                } else if (parsed.type === 'token') {
+                                    if (!bubbleEl) {
+                                        removeTypingIndicator(typingId);
+                                        const msgEl = addMessage('ai', '', lang);
+                                        bubbleEl = msgEl.querySelector('.m-bubble');
+                                        streamed = true;
+                                    }
+                                    bubbleEl.textContent += parsed.text;
+                                    smoothScroll();
+                                } else if (parsed.type === 'error') {
+                                    removeTypingIndicator(typingId);
+                                    addMessage('ai', 'Error: ' + parsed.text, 'english');
+                                    streamed = true;
+                                }
+                            } catch {}
+                        }
+                    }
+                    if (buffer.startsWith('data: ')) {
+                        const payload = buffer.slice(6);
+                        if (payload !== '[DONE]') {
+                            try {
+                                const parsed = JSON.parse(payload);
+                                if (parsed.type === 'token' && !bubbleEl) {
+                                    removeTypingIndicator(typingId);
+                                    const msgEl = addMessage('ai', '', lang);
+                                    bubbleEl = msgEl.querySelector('.m-bubble');
+                                    bubbleEl.textContent += parsed.text;
+                                    streamed = true;
+                                }
+                            } catch {}
+                        }
+                    }
+                    if (!bubbleEl && !streamed) {
+                        removeTypingIndicator(typingId);
+                        addMessage('ai', 'No response received', 'english');
+                    }
+                    if (bubbleEl) renderMathInBubble(bubbleEl);
                 } else {
-                    addMessage('ai', 'Error: ' + (data.error || 'Unknown error'));
+                    const data = await res.json();
+                    removeTypingIndicator(typingId);
+                    if (data.success) {
+                        addMessage('ai', data.answer, data.lang || 'english');
+                    } else {
+                        addMessage('ai', 'Error: ' + (data.error || 'Unknown error'), 'english');
+                    }
                 }
+                if (session) { session.messages = getChatMessages(); saveSessions(); }
             } catch (err) {
-                removeTypingIndicator(typingId);
-                addMessage('ai', 'Error: ' + err.message);
+                if (!streamed) {
+                    removeTypingIndicator(typingId);
+                    addMessage('ai', 'Error: ' + err.message, 'english');
+                }
             }
-
             questionInput.disabled = false;
             sendBtn.disabled = false;
             questionInput.focus();
         }
 
-        function addMessage(role, content) {
-            emptyState.style.display = 'none';
+        function renderMathInBubble(el) {
+            if (typeof katex !== 'undefined') {
+                try { renderMathInElement(el); } catch {}
+            }
+        }
 
+        function addMessage(role, content, lang) {
             const now = new Date();
             const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-            const div = document.createElement('div');
-            div.className = 'message ' + role;
+            const group = document.createElement('div');
+            group.className = 'msg-group';
+
+            const row = document.createElement('div');
+            row.className = 'msg-row ' + role;
 
             const avatar = document.createElement('div');
-            avatar.className = 'avatar';
+            avatar.className = 'm-avatar';
+
             if (role === 'user') {
                 avatar.textContent = 'U';
             } else {
                 avatar.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" /></svg>';
             }
 
-            const msgContent = document.createElement('div');
-            msgContent.className = 'msg-content';
+            const body = document.createElement('div');
+            body.className = 'm-body';
 
             const bubble = document.createElement('div');
-            bubble.className = 'bubble';
+            bubble.className = 'm-bubble';
             bubble.textContent = content;
 
-            const ts = document.createElement('div');
-            ts.className = 'timestamp';
-            ts.textContent = timeStr;
+            const meta = document.createElement('div');
+            meta.className = 'm-meta';
 
-            msgContent.appendChild(bubble);
-            msgContent.appendChild(ts);
+            const timeEl = document.createElement('span');
+            timeEl.className = 'm-time';
+            timeEl.textContent = timeStr;
+            meta.appendChild(timeEl);
 
-            if (role === 'user') {
-                div.appendChild(msgContent);
-                div.appendChild(avatar);
-            } else {
-                div.appendChild(avatar);
-                div.appendChild(msgContent);
+            if (lang) {
+                const langEl = document.createElement('span');
+                langEl.className = 'm-lang';
+                langEl.dataset.lang = lang;
+                langEl.textContent = lang === 'urdu' || lang === 'roman-urdu' ? 'UR' : 'EN';
+                meta.appendChild(langEl);
             }
 
-            chatContainer.appendChild(div);
+            body.appendChild(bubble);
+            body.appendChild(meta);
+
+            if (role === 'user') {
+                row.appendChild(body);
+                row.appendChild(avatar);
+            } else {
+                row.appendChild(avatar);
+                row.appendChild(body);
+            }
+
+            group.appendChild(row);
+            chatScroll.appendChild(group);
             smoothScroll();
+
+            return group;
         }
 
         function addTypingIndicator() {
-            emptyState.style.display = 'none';
+            heroSection.style.display = 'none';
 
-            const div = document.createElement('div');
-            div.className = 'message ai typing-message';
+            const group = document.createElement('div');
+            group.className = 'msg-group typing-group';
+
+            const row = document.createElement('div');
+            row.className = 'msg-row ai';
 
             const avatar = document.createElement('div');
-            avatar.className = 'avatar';
+            avatar.className = 'm-avatar';
             avatar.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" /></svg>';
 
-            const msgContent = document.createElement('div');
-            msgContent.className = 'msg-content';
+            const body = document.createElement('div');
+            body.className = 'm-body';
 
             const bubble = document.createElement('div');
-            bubble.className = 'bubble';
-            bubble.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+            bubble.className = 'm-bubble';
+            bubble.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
 
-            msgContent.appendChild(bubble);
-            div.appendChild(avatar);
-            div.appendChild(msgContent);
-            chatContainer.appendChild(div);
+            body.appendChild(bubble);
+            row.appendChild(avatar);
+            row.appendChild(body);
+            group.appendChild(row);
+            chatScroll.appendChild(group);
             smoothScroll();
 
-            return div;
+            return group;
         }
 
         function removeTypingIndicator(el) {
-            if (el && el.parentNode) {
-                el.remove();
-            }
+            if (el && el.parentNode) el.remove();
         }
 
         function smoothScroll() {
             requestAnimationFrame(() => {
-                chatContainer.scrollTo({
-                    top: chatContainer.scrollHeight,
+                chatScroll.scrollTo({
+                    top: chatScroll.scrollHeight,
                     behavior: 'smooth'
                 });
             });
